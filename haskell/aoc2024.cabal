@@ -1,0 +1,82 @@
+cabal-version:       2.4
+name:                aoc2024
+version:             0.1.0.0
+synopsis:            My Advent of Code 2024 solutions.
+description:         My Advent of Code 2024 solutions.
+homepage:            https://github.com/Solonarv/adventofcode-2024#README
+license:             MIT
+license-file:        LICENSE
+author:              Solonarv
+maintainer:          nstamm@gmx.de
+-- copyright:
+-- category:
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+
+common deps
+  build-depends:       base >=4.18 && <5
+                     , containers ^>= 0.6
+                     , vector
+                     , bytestring
+                     , text
+                     , unordered-containers
+                     , megaparsec ^>= 9.6
+                     , parser-combinators
+                     , linear
+                     , split
+                     , conduit
+                     , mtl
+                     , monad-loops
+                     , lens
+                     , finite-typelits
+                     , comonad
+                     , monad-loops
+                     , regex-applicative
+                     , vector-algorithms
+                     , data-interval
+
+common lang
+  default-language:    GHC2021
+  -- -XKitchenSink
+  default-extensions:  TypeFamilies FlexibleContexts FlexibleInstances DataKinds GADTs
+                       TypeFamilyDependencies TypeOperators PolyKinds RankNTypes
+                       TypeApplications ScopedTypeVariables ConstraintKinds FunctionalDependencies
+                       MultiParamTypeClasses NamedFieldPuns LambdaCase BangPatterns DerivingStrategies
+                       GeneralizedNewtypeDeriving RoleAnnotations TupleSections BlockArguments
+                       DeriveFunctor DeriveFoldable DeriveTraversable DerivingVia ViewPatterns
+                       ImplicitParams
+  ghc-options:         -Wall -Wno-unused-do-bind -O1
+
+executable solve
+  import: deps, lang
+  main-is:             Main.hs
+  hs-source-dirs:      src
+  build-depends:       aoc2024, solutions, util
+  ghc-options:         -threaded -rtsopts -funbox-small-strict-fields
+
+library
+  import: deps, lang
+  hs-source-dirs:      harness
+  exposed-modules:     AOC.Solution, AOC.Harness
+  build-depends:       util
+                     , optparse-applicative
+                     , ansi-terminal
+                     , directory
+                     , htoml-megaparsec
+                     , req
+                     , http-client
+                     , time
+                     , data-default
+  ghc-options:         -Wno-orphans
+
+library util
+  import: deps, lang
+  hs-source-dirs:      util
+  exposed-modules:     DynMap, Grid2D, PagedVector, ParsingPrelude, RatAngle, Util
+  build-depends:       primitive
+
+library solutions
+  import: deps, lang
+  exposed-modules: Day01
+  hs-source-dirs: solutions
+  build-depends: aoc2024, util
