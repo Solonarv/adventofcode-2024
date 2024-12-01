@@ -36,15 +36,9 @@ common deps
                      , data-interval
 
 common lang
-  default-language:    GHC2021
+  default-language:    GHC2024
   -- -XKitchenSink
-  default-extensions:  TypeFamilies FlexibleContexts FlexibleInstances DataKinds GADTs
-                       TypeFamilyDependencies TypeOperators PolyKinds RankNTypes
-                       TypeApplications ScopedTypeVariables ConstraintKinds FunctionalDependencies
-                       MultiParamTypeClasses NamedFieldPuns LambdaCase BangPatterns DerivingStrategies
-                       GeneralizedNewtypeDeriving RoleAnnotations TupleSections BlockArguments
-                       DeriveFunctor DeriveFoldable DeriveTraversable DerivingVia ViewPatterns
-                       ImplicitParams
+  default-extensions:  BlockArguments, ImplicitParams, ViewPatterns, TypeFamilies
   ghc-options:         -Wall -Wno-unused-do-bind -O1
 
 executable solve
