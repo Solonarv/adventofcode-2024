@@ -71,6 +71,6 @@ library util
 
 library solutions
   import: deps, lang
-  exposed-modules: Day01
+  exposed-modules: Day01, Day02
   hs-source-dirs: solutions
   build-depends: aoc2024, util

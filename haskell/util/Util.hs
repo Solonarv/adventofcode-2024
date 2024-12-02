@@ -227,3 +227,7 @@ fromDigits b = foldl' (\r d -> r*b + d) 0
 
 guarding :: Alternative f => (a -> Bool) -> a -> f a
 guarding p x = x <$ guard (p x)
+
+splits :: [a] -> [([a], [a])]
+splits [] = [([],[])]
+splits l@(x:xs) = ([], l) : map (\case ~(as, bs) -> (x:as, bs)) (splits xs)
