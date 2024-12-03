@@ -1,6 +1,6 @@
 module ParsingPrelude
   ( Parser
-  , chainl, noeol, singleDigit, char2digitBase
+  , chainl, noeol, singleDigit, char2digitBase, scanManySkipping
   , module Text.Megaparsec
   , module Text.Megaparsec.Char
   , module Text.Megaparsec.Char.Lexer, onecharify
@@ -51,3 +51,10 @@ char2digitBase (min 36 -> b) = fmap fromIntegral . guarding (< b) <=< \c -> guar
 -- to consume exactly one token if it succeeds, using @lookAhead@
 onecharify :: (MonadParsec e s m, Token s ~ Char) => m a -> m a
 onecharify p = lookAhead p <* takeP Nothing 1
+
+scanManySkipping :: MonadParsec e s m => m a -> m void -> m [a]
+scanManySkipping needle skip = go
+  where
+    go = optional (try needle) >>= \case
+        Nothing -> (skip *> go) <|> pure []
+        Just x -> (x:) <$> go

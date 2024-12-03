@@ -120,13 +120,10 @@ memoMap maxSize f = f'
     {-# NOINLINE cacheRef #-}
 
 safeHead :: [a] -> Maybe a
-safeHead [] = Nothing
-safeHead (x:_) = Just x
+safeHead = foldr (const . Just) Nothing
 
 safeLast :: [a] -> Maybe a
-safeLast [] = Nothing
-safeLast [x] = Just x
-safeLast (_:xs) = safeLast xs
+safeLast = foldr (\cases { x Nothing -> Just x; _ y -> y}) Nothing
 
 safeIndex :: Int -> [a] -> Maybe a
 safeIndex n = safeHead . drop n
@@ -228,6 +225,7 @@ fromDigits b = foldl' (\r d -> r*b + d) 0
 guarding :: Alternative f => (a -> Bool) -> a -> f a
 guarding p x = x <$ guard (p x)
 
+-- | @splits xs@ is all possible pairs @(ys, zs)@ such that @xs = ys ++ zs@.
 splits :: [a] -> [([a], [a])]
 splits [] = [([],[])]
 splits l@(x:xs) = ([], l) : map (\case ~(as, bs) -> (x:as, bs)) (splits xs)
