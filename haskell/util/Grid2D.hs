@@ -76,6 +76,27 @@ ray sx sy dx dy grid = go sx sy
       Nothing -> []
       Just t -> t : go (x+dx) (y+dy)
 
+rayWithCoords :: Int -> Int -> Int -> Int -> Grid2D a -> [((Int, Int), a)]
+rayWithCoords sx sy dx dy grid = go sx sy
+  where
+    go x y = case grid ^? gridPoint x y of
+      Nothing -> []
+      Just t -> ((x,y),t) : go (x+dx) (y+dy)
+
+allRays :: Int -> Int -> Grid2D a -> [[a]]
+allRays dx dy g =
+  [ ray sx sy dx dy g
+  | sx <- [0 .. width g - 1]
+  , sy <- [0 .. height g  - 1]
+  ]
+
+allRaysWithCoords :: Int -> Int -> Grid2D a -> [[((Int, Int), a)]]
+allRaysWithCoords dx dy g =
+  [ rayWithCoords sx sy dx dy g
+  | sx <- [0 .. width g - 1]
+  , sy <- [0 .. height g  - 1]
+  ]
+
 genGrid :: Int -> Int -> (Int -> Int -> a) -> Grid2D a
 genGrid w h f = Grid2D w h entries
   where

@@ -1,6 +1,6 @@
 module ParsingPrelude
   ( Parser
-  , chainl, noeol, singleDigit, char2digitBase, scanManySkipping
+  , chainl, noeol, singleDigit, char2digitBase, scanManySkipping, nonspace
   , module Text.Megaparsec
   , module Text.Megaparsec.Char
   , module Text.Megaparsec.Char.Lexer, onecharify
@@ -58,3 +58,6 @@ scanManySkipping needle skip = go
     go = optional (try needle) >>= \case
         Nothing -> (skip *> go) <|> pure []
         Just x -> (x:) <$> go
+
+nonspace :: (MonadParsec e s m, Token s ~ Char) => m (Token s)
+nonspace = satisfy (not . isSpace)
