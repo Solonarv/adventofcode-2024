@@ -8,16 +8,15 @@ import Util
 import Math.NumberTheory.Logarithms
 import Data.Foldable1
 import Data.List.NonEmpty (NonEmpty, nonEmpty)
-import Data.List.NonEmpty qualified as NonEmpty
 
-solution :: Solution [Equation] Integer Integer
+solution :: Solution [Equation] Int Int
 solution = Solution
   { decodeInput = equationP `sepBy` eol
   , solveA = defSolver
-    { solve = Just . sum . map eqnTarget . filter (canBeTrue [Plus, Times])
+    { solve = Just . sum . map eqnTarget . filter (canBeTrue [(+), (*)])
     }
   , solveB = defSolver
-    { solve = Just . sum . map eqnTarget . filter (canBeTrue [Plus, Times, Concat])
+    { solve = Just . sum . map eqnTarget . filter (canBeTrue [(+), (*), concatIntegers])
     }
   , tests =
     [ unlines
@@ -34,7 +33,7 @@ solution = Solution
     ]
   }
 
-data Equation = Equation { eqnTarget :: !Integer, eqnVals :: NonEmpty Integer }
+data Equation = Equation { eqnTarget :: !Int, eqnVals :: !(NonEmpty Int) }
   deriving (Eq, Ord, Show)
 
 equationP :: Parser Equation
@@ -44,29 +43,14 @@ equationP = do
   Just vals <- nonEmpty <$> (decimal `sepBy` noeol)
   pure $ Equation target vals
 
-data IntegerOp = Plus | Times | Concat
-  deriving (Eq, Ord, Show)
+type IntOp = Int -> Int -> Int
 
-applyOp :: IntegerOp -> Integer -> Integer -> Integer
-applyOp = \case
-  Plus -> (+)
-  Times -> (*)
-  Concat -> concatIntegers
+allEvalPathsUpto :: Foldable1 t => [IntOp] -> Int -> t Int -> [Int]
+allEvalPathsUpto ops bound = foldlM1 \x y -> do guard (x <= bound); op <- ops; pure $ op x y
+{-# INLINE allEvalPathsUpto #-}
 
-invertOp :: IntegerOp -> Integer -> Integer -> Maybe Integer
-invertOp = \cases
-  Plus r a -> Just (r-a)
-  Times r a
-    | (q, m) <- r `divMod` a
-    -> q <$ guard (m == 0)
-  Concat r a -> r `stripSuffixInteger` a
-
-allEvalPaths :: Foldable1 t => [IntegerOp] -> t Integer -> [Integer]
-allEvalPaths ops = foldlM1 \x y -> do op <- ops; pure $ applyOp op x y
-{-# INLINE allEvalPaths #-}
-
-canBeTrue :: [IntegerOp] -> Equation -> Bool
-canBeTrue ops (Equation target vals) = target `elem` allEvalPaths ops vals
+canBeTrue :: [IntOp] -> Equation -> Bool
+canBeTrue ops (Equation target vals) = target `elem` allEvalPathsUpto ops target vals
 -- canBeTrue ops (Equation target vals) = go (NonEmpty.reverse vals) target
 --   where
 --     go (NonEmpty.uncons -> (r', Nothing))  r = r == r'
@@ -77,24 +61,24 @@ canBeTrue ops (Equation target vals) = target `elem` allEvalPaths ops vals
 --       | otherwise = False
 {-# INLINE canBeTrue #-}
 
-concatIntegers :: Integer -> Integer -> Integer
+concatIntegers :: Int -> Int -> Int
 concatIntegers = \ a b -> a * 10 ^ nDigits b + b
 {-# INLINE concatIntegers #-}
 
-nDigits :: Integer -> Int
-nDigits = (+1) . integerLog10
+nDigits :: Int -> Int
+nDigits = (+1) . integerLog10 . fromIntegral  -- why no intLog10 :(
 {-# INLINE nDigits #-}
 
-stripSuffixInteger :: Integer -> Integer -> Maybe Integer
-stripSuffixInteger x s = let
-  w_s = nDigits s
-  (h, t) = x `divMod` (10 ^ w_s)
-  in h <$ guard (t==0)
+-- stripSuffixInteger :: Integer -> Integer -> Maybe Integer
+-- stripSuffixInteger x s = let
+--   w_s = nDigits s
+--   (h, t) = x `divMod` (10 ^ w_s)
+--   in h <$ guard (t==0)
 
-stripPrefixInteger :: Integer -> Integer -> Maybe Integer
-stripPrefixInteger x p = let
-  w_p = nDigits p
-  w_x = nDigits x
-  (h, t) = x `divMod` (10 ^ (w_x - w_p))
-  ok = w_x >= w_p && p == h
-  in t <$ guard ok
+-- stripPrefixInteger :: Integer -> Integer -> Maybe Integer
+-- stripPrefixInteger x p = let
+--   w_p = nDigits p
+--   w_x = nDigits x
+--   (h, t) = x `divMod` (10 ^ (w_x - w_p))
+--   ok = w_x >= w_p && p == h
+--   in t <$ guard ok
