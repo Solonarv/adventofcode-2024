@@ -34,6 +34,7 @@ common deps
                      , regex-applicative
                      , vector-algorithms
                      , data-interval
+                     , integer-logarithms
 
 common lang
   default-language:    GHC2024
@@ -71,6 +72,6 @@ library util
 
 library solutions
   import: deps, lang
-  exposed-modules: Day01, Day02, Day03, Day04, Day05, Day06
+  exposed-modules: Day01, Day02, Day03, Day04, Day05, Day06, Day07
   hs-source-dirs: solutions
   build-depends: aoc2024, util
