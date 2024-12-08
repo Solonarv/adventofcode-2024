@@ -5,6 +5,7 @@ module Util
   , module Data.Foldable
   , module Data.Maybe
   , module Data.Monoid
+  , module Debug.Trace
   ) where
 
 import Control.Applicative hiding (some, many)
@@ -20,6 +21,7 @@ import Data.IORef
 import Data.Semigroup
 import Numeric.Natural
 import System.IO.Unsafe
+import Debug.Trace
 
 import Control.Comonad
 import Control.Monad.Primitive
