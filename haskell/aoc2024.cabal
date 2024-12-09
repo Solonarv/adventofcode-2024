@@ -35,11 +35,12 @@ common deps
                      , vector-algorithms
                      , data-interval
                      , integer-logarithms
+                     , generic-lens
 
 common lang
   default-language:    GHC2024
   -- -XKitchenSink
-  default-extensions:  BlockArguments, ImplicitParams, ViewPatterns, TypeFamilies
+  default-extensions:  BlockArguments, ImplicitParams, ViewPatterns, TypeFamilies, OverloadedLabels
   ghc-options:         -Wall -Wno-unused-do-bind -O1
 
 executable solve

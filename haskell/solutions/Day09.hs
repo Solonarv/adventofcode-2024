@@ -5,6 +5,8 @@ import ParsingPrelude
 import Util
 
 import Control.Lens hiding (Empty, inside)
+import GHC.Generics (Generic)
+import Data.Generics.Labels
 import Data.Sequence (Seq(..))
 import Data.Sequence qualified as Seq
 
@@ -34,7 +36,7 @@ newtype Disk = Disk { diskChunks :: Seq Chunk }
   deriving (Eq, Ord, Show)
 
 data Chunk = Chunk { chunkFileId :: Maybe Int, chunkSize :: Int }
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Generic)
 
 isEmpty :: Chunk -> Bool
 isEmpty = isNothing . chunkFileId
@@ -95,27 +97,23 @@ checksum = go 0 0 . diskChunks
         s = sum [pos .. pos'-1]  -- cba to wrangle the proper formula
 
 compact :: Disk -> Disk
-compact Disk{ diskChunks = chunks } = Disk $ go highestId (Seq.filter ((>0) . chunkSize) chunks)
+compact Disk{ diskChunks = chunks } = Disk $ go (Seq.filter ((>0) . chunkSize) chunks)
   where
     highestId = (length chunks + 1) `div` 2
-    go curId blocks
-      | curId < 0 = blocks
+    go Empty = Empty
       -- | curId `mod` 100 == 0, traceShow curId False = error "brek"
-      | otherwise
-      = case ifind (\_ chk -> chunkFileId chk == Just curId) blocks of
-        Nothing -> go (curId - 1) blocks
-        Just (src, toMove) -> case ifind (\_ chk -> isEmpty chk && chunkSize chk >= chunkSize toMove) $ Seq.take (src-1) blocks of
-          Nothing -> go (curId-1) blocks
-          Just (dst, freeSpace) -> let
-            moveSize = chunkSize toMove
-            freeSize = chunkSize freeSpace
-            remainingChunk = emptyChunk $ freeSize - moveSize
-            addRemaining | chunkSize remainingChunk > 0 = Seq.insertAt (dst+1) remainingChunk | otherwise = id
-            newlyFree = toMove{ chunkFileId = Nothing }
-            nearSrc = inside (src-2) (src+2)
-            nearDst = inside (dst-2) (dst+2)
-            blocks' = nearSrc coalesceFree . nearDst coalesceFree . addRemaining . Seq.update dst toMove . Seq.update src newlyFree $ blocks
-            in go (curId-1) blocks'
+    go (rest :|> chk)
+      = case chunkFileId chk of
+        Just _
+          | Just rest' <- move chk rest -> go rest' :|> chk { chunkFileId = Nothing }
+        _ -> go rest :|> chk
+
+move :: Chunk -> Seq Chunk -> Maybe (Seq Chunk)
+move chk blocks = do
+  ix <- Seq.findIndexL suitable blocks
+  let withShrunkSpace = Seq.adjust (#chunkSize -~ chunkSize chk) ix blocks
+  pure $ Seq.insertAt ix chk withShrunkSpace
+  where suitable spc = isEmpty spc && chunkSize spc >= chunkSize chk
 
 inside :: Int -> Int ->  (Seq a -> Seq a) -> Seq a -> Seq a
 inside start end f xs = let
