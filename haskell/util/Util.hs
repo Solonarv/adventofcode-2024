@@ -3,6 +3,7 @@ module Util
   , module Control.Applicative
   , module Control.Monad
   , module Data.Foldable
+  , module Data.List
   , module Data.Maybe
   , module Data.Monoid
   , module Debug.Trace
@@ -15,6 +16,7 @@ import Data.Bits
 import Data.Coerce
 import Data.Foldable
 import Data.Function
+import Data.List
 import Data.Maybe
 import Data.Monoid
 import Data.IORef
@@ -200,6 +202,12 @@ countHits p = foldl' (\s e -> if p e then 1 + s else s) 0
 
 within :: Ord a => a -> a -> a -> Bool
 within lo hi x = x >= lo && x <= hi
+
+iterateUntilNothing :: (a -> Maybe a) -> a -> a
+iterateUntilNothing f = go where
+  go x = case f x of
+    Nothing -> x
+    Just x' -> go x'
 
 iterateUntilAnyRepeat :: Ord a => (a -> a) -> a -> (Int, a)
 iterateUntilAnyRepeat f start = go (LazyMap.singleton start 1) start
