@@ -61,12 +61,31 @@ adjacents x y grid = mapMaybe (grid ^?)
   , dx /= 0 || dy /= 0
   ]
 
+adjacentsWithCoords :: Int -> Int -> Grid2D a -> [((Int, Int), a)]
+adjacentsWithCoords x y grid =
+  [ ((x', y'), val)
+  | dx <- [-1, 0, 1]
+  , dy <- [-1, 0, 1]
+  , dx /= 0 || dy /= 0
+  , let x' = x + dx
+  , let y' = y + dy
+  , val <- grid ^.. gridPoint x' y'
+  ]
+
 adjacentsNeumann :: Int -> Int -> Grid2D a -> [a]
 adjacentsNeumann x y grid = catMaybes
   [ grid ^? gridPoint (x-1) y
   , grid ^? gridPoint (x+1) y
   , grid ^? gridPoint x (y-1)
   , grid ^? gridPoint x (y+1)
+  ]
+
+adjacentsNeumannWithCoords :: Int -> Int -> Grid2D a -> [((Int, Int), a)]
+adjacentsNeumannWithCoords x y grid = catMaybes
+  [ ((x-1,y),) <$> grid ^? gridPoint (x-1) y
+  , ((x+1,y),) <$> grid ^? gridPoint (x+1) y
+  , ((x,y-1),) <$> grid ^? gridPoint x (y-1)
+  , ((x,y+1),) <$> grid ^? gridPoint x (y+1)
   ]
 
 ray :: Int -> Int -> Int -> Int -> Grid2D a -> [a]
