@@ -6,7 +6,7 @@ import Util
 
 import Control.Lens hiding (Empty, inside)
 import GHC.Generics (Generic)
-import Data.Generics.Labels
+import Data.Generics.Labels ()
 import Data.Sequence (Seq(..))
 import Data.Sequence qualified as Seq
 
@@ -99,7 +99,6 @@ checksum = go 0 0 . diskChunks
 compact :: Disk -> Disk
 compact Disk{ diskChunks = chunks } = Disk $ go (Seq.filter ((>0) . chunkSize) chunks)
   where
-    highestId = (length chunks + 1) `div` 2
     go Empty = Empty
       -- | curId `mod` 100 == 0, traceShow curId False = error "brek"
     go (rest :|> chk)
@@ -110,9 +109,9 @@ compact Disk{ diskChunks = chunks } = Disk $ go (Seq.filter ((>0) . chunkSize) c
 
 move :: Chunk -> Seq Chunk -> Maybe (Seq Chunk)
 move chk blocks = do
-  ix <- Seq.findIndexL suitable blocks
-  let withShrunkSpace = Seq.adjust (#chunkSize -~ chunkSize chk) ix blocks
-  pure $ Seq.insertAt ix chk withShrunkSpace
+  dst <- Seq.findIndexL suitable blocks
+  let withShrunkSpace = Seq.adjust (#chunkSize -~ chunkSize chk) dst blocks
+  pure $ Seq.insertAt dst chk withShrunkSpace
   where suitable spc = isEmpty spc && chunkSize spc >= chunkSize chk
 
 inside :: Int -> Int ->  (Seq a -> Seq a) -> Seq a -> Seq a

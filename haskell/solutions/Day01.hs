@@ -6,7 +6,6 @@ import ParsingPrelude
 import Util
 
 import Control.Lens
-import Data.List
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
 

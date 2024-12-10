@@ -8,7 +8,6 @@ import Util
 import Control.Lens hiding (Empty)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Linear.V2
 
 solution :: Solution (Grid2D Tile, Guard) Int Int
 solution = Solution

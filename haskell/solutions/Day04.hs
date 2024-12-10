@@ -7,8 +7,6 @@ import Grid2D
 import Util
 
 import Data.IntMap.Strict qualified as IntMap
-import Data.List
-import Linear.V2
 
 solution :: Solution (Grid2D Char) Int Int
 solution = Solution

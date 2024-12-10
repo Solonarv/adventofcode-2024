@@ -34,6 +34,9 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Map.Lazy as LazyMap
 import qualified Data.Map.Internal as Map.Internal
 
+nyeh :: String
+nyeh = "nyeh"
+
 -- | Appropriately strict version of 'sum'.
 sum' :: (Foldable t, Num a) => t a -> a
 sum' = foldl' (+) 0

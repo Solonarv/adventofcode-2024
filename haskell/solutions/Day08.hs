@@ -8,9 +8,7 @@ import Util
 import Control.Lens hiding (Empty)
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
-import Data.List
 import Data.Set qualified as Set
-import Linear.V2
 import Linear.Vector
 
 solution :: Solution (Grid2D Tile) Int Int

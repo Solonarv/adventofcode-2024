@@ -3,17 +3,13 @@ module Day05 where
 
 import AOC.Solution
 import ParsingPrelude
-import Util
 
 import Data.IntMap (IntMap)
 import Data.IntMap.Strict qualified as IntMap
-import Data.IntMap.Lazy qualified as LazyIntMap
 import Data.IntSet qualified as IntSet
 import Data.Vector (Vector, (!))
 import Data.Vector qualified as Vector
 import Data.Vector.Algorithms.Tim as Tim
-
-import Debug.Trace
 
 solution :: Solution Orders [Vector Int] [Vector Int]
 solution = Solution
