@@ -89,12 +89,12 @@ tileP :: Parser Int
 tileP = 99 <$ single '.' <|> singleDigit 10
   -- quick hack: "impassable" . tiles from the examples get processed as height 99
 
-reachablePeaks :: Grid2D Int -> Grid2D (Set (Int, Int))
+reachablePeaks :: Grid2D Int -> Grid2D (Set (V2 Int))
 reachablePeaks topo = scores
   where
     scores = imap score topo
     score pos 9 = Set.singleton pos
-    score (x, y) h = Set.unions [scores ^?! ix pos | (pos, h') <- adjacentsNeumannWithCoords x y topo, h' == h+1]
+    score (V2 x y) h = Set.unions [scores ^?! ix pos | (pos, h') <- adjacentsNeumannWithCoords x y topo, h' == h+1]
 
 trailheadScores :: Grid2D Int -> Int
 trailheadScores topo = getSum $ ifoldMap scoreHead topo
@@ -109,7 +109,7 @@ pathsToPeaks topo = paths
   where
     paths = imap count topo
     count _ 9 = 1
-    count (x,y) h = sum [paths ^?! ix pos | (pos, h') <- adjacentsNeumannWithCoords x y topo, h' == h+1]
+    count (V2 x y) h = sum [paths ^?! ix pos | (pos, h') <- adjacentsNeumannWithCoords x y topo, h' == h+1]
 
 trailheadRatings :: Grid2D Int -> Int
 trailheadRatings topo = getSum $ ifoldMap rateHead topo

@@ -74,7 +74,7 @@ collectAntennas :: Grid2D Tile -> Map Char [V2 Int]
 collectAntennas = ifoldl upd Map.empty
   where
     upd _ coll Empty = coll
-    upd (x,y) coll (Antenna f) = Map.insertWith (++) f [V2 x y] coll
+    upd pos coll (Antenna f) = Map.insertWith (++) f [pos] coll
 
 antinodes :: [V2 Int] -> [V2 Int]
 antinodes antennas =

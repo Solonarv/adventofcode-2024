@@ -8,6 +8,7 @@ import Util
 
 import Data.IntMap.Strict qualified as IntMap
 import Data.List
+import Linear.V2
 
 solution :: Solution (Grid2D Char) Int Int
 solution = Solution
@@ -34,7 +35,7 @@ solution = Solution
     ]
   }
 
-findPattern :: Eq a => [a] -> Grid2D a -> [[(Int, Int)]]
+findPattern :: Eq a => [a] -> Grid2D a -> [[V2 Int]]
 findPattern pat g = map (map fst) . filter ((pat `isPrefixOf`) . map snd) $ concat
   [ allRaysWithCoords dx dy g
   | dx <- [-1, 0, 1]
@@ -42,7 +43,7 @@ findPattern pat g = map (map fst) . filter ((pat `isPrefixOf`) . map snd) $ conc
   , dx /= 0 || dy /= 0
   ]
 
-findCrossPattern :: Ord a => [a] -> Grid2D a -> [(Int, Int)]
+findCrossPattern :: Ord a => [a] -> Grid2D a -> [V2 Int]
 findCrossPattern pat g = crosses
   where
     diagRays = concat

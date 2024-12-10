@@ -14,9 +14,9 @@ solution :: Solution (Grid2D Tile, Guard) Int Int
 solution = Solution
   { decodeInput = do
       grid <- Grid2D.fromLines <$> (some (oneOf ".#^v<>") `sepBy` eol)
-      ((x,y), c) <- maybe (fail "no guard!") pure $ ifind (\_ c -> c `elem` "^v<>") grid
+      (pos, c) <- maybe (fail "no guard!") pure $ ifind (\_ c -> c `elem` "^v<>") grid
       let dir = fromMaybe (error "impossible") $ readDirection c
-      pure (readTile <$> grid, Guard (V2 x y) dir)
+      pure (readTile <$> grid, Guard pos dir)
   , solveA = defSolver
     { solve = \(lab, g) -> Just . Set.size . Set.map guardPos . snd $ guardStates lab g
     }
@@ -74,8 +74,8 @@ data Guard = Guard { guardPos :: !(V2 Int), guardDir :: !Direction }
 
 stepGuard :: Grid2D Tile -> Guard -> Maybe Guard
 stepGuard lab (Guard pos dir) = let
-  fw@(V2 x y) = pos + dir2unit dir
-  in case lab ^? gridPoint x y of
+  fw = pos + dir2unit dir
+  in case lab ^? ix fw of
       Just Empty -> Just $ Guard fw dir
       Just Obstacle -> Just $ Guard pos (nextDir dir)
       Nothing -> Nothing
@@ -95,7 +95,7 @@ isLoop g lab = fst $ guardStates lab g
 -- not very clever right now, just tries all tiles the guard visits
 loopCandidates :: Grid2D Tile -> Guard -> [Grid2D Tile]
 loopCandidates lab g =
-  [ lab & ix (x, y) .~ Obstacle
-  | pos@(V2 x y) <- Set.toList . Set.map guardPos . snd $ guardStates lab g
+  [ lab & ix pos .~ Obstacle
+  | pos <- Set.toList . Set.map guardPos . snd $ guardStates lab g
   , pos /= guardPos g
   ]

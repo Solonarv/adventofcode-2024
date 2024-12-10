@@ -1,10 +1,11 @@
-module Grid2D where
+module Grid2D (module Grid2D, module Linear.V2) where
 
 import Data.Maybe
 
 import Control.Lens
 import Data.Vector (Vector)
 import qualified Data.Vector as Vector
+import Linear.V2
 
 import Util
 
@@ -15,22 +16,22 @@ width, height :: Grid2D a -> Int
 width (Grid2D w _ _) = w
 height (Grid2D _ h _) = h
 
-type instance Index (Grid2D a) = (Int, Int)
+type instance Index (Grid2D a) = V2 Int
 type instance IxValue (Grid2D a) = a
 instance Ixed (Grid2D a) where
-  ix (x,y) = gridPoint x y
+  ix (V2 x y) = gridPoint x y
 
-instance FunctorWithIndex (Int, Int) Grid2D where
+instance FunctorWithIndex (V2 Int) Grid2D where
   imap = iover itraversed
 
-instance FoldableWithIndex (Int, Int) Grid2D where
+instance FoldableWithIndex (V2 Int) Grid2D where
   ifoldMap = ifoldMapOf itraversed
   ifoldr = ifoldrOf itraversed
 
-instance TraversableWithIndex (Int, Int) Grid2D where
+instance TraversableWithIndex (V2 Int) Grid2D where
   itraverse f (Grid2D w h vec) = Grid2D w h <$> itraverseVec (f . unflatten) vec
     where
-      unflatten = swap . (`divMod` w)
+      unflatten i = let (y, x) = i `divMod` w in V2 x y
       itraverseVec = itraverseOf (indexing traversed)
 
 gridPoint :: Int -> Int -> Traversal' (Grid2D a) a
@@ -61,9 +62,9 @@ adjacents x y grid = mapMaybe (grid ^?)
   , dx /= 0 || dy /= 0
   ]
 
-adjacentsWithCoords :: Int -> Int -> Grid2D a -> [((Int, Int), a)]
+adjacentsWithCoords :: Int -> Int -> Grid2D a -> [(V2 Int, a)]
 adjacentsWithCoords x y grid =
-  [ ((x', y'), val)
+  [ (V2 x' y', val)
   | dx <- [-1, 0, 1]
   , dy <- [-1, 0, 1]
   , dx /= 0 || dy /= 0
@@ -80,12 +81,12 @@ adjacentsNeumann x y grid = catMaybes
   , grid ^? gridPoint x (y+1)
   ]
 
-adjacentsNeumannWithCoords :: Int -> Int -> Grid2D a -> [((Int, Int), a)]
+adjacentsNeumannWithCoords :: Int -> Int -> Grid2D a -> [(V2 Int, a)]
 adjacentsNeumannWithCoords x y grid = catMaybes
-  [ ((x-1,y),) <$> grid ^? gridPoint (x-1) y
-  , ((x+1,y),) <$> grid ^? gridPoint (x+1) y
-  , ((x,y-1),) <$> grid ^? gridPoint x (y-1)
-  , ((x,y+1),) <$> grid ^? gridPoint x (y+1)
+  [ (V2 (x-1) y,) <$> grid ^? gridPoint (x-1) y
+  , (V2 (x+1) y,) <$> grid ^? gridPoint (x+1) y
+  , (V2 x (y-1),) <$> grid ^? gridPoint x (y-1)
+  , (V2 x (y+1),) <$> grid ^? gridPoint x (y+1)
   ]
 
 ray :: Int -> Int -> Int -> Int -> Grid2D a -> [a]
@@ -95,12 +96,12 @@ ray sx sy dx dy grid = go sx sy
       Nothing -> []
       Just t -> t : go (x+dx) (y+dy)
 
-rayWithCoords :: Int -> Int -> Int -> Int -> Grid2D a -> [((Int, Int), a)]
+rayWithCoords :: Int -> Int -> Int -> Int -> Grid2D a -> [(V2 Int, a)]
 rayWithCoords sx sy dx dy grid = go sx sy
   where
     go x y = case grid ^? gridPoint x y of
       Nothing -> []
-      Just t -> ((x,y),t) : go (x+dx) (y+dy)
+      Just t -> (V2 x y, t) : go (x+dx) (y+dy)
 
 allRays :: Int -> Int -> Grid2D a -> [[a]]
 allRays dx dy g =
@@ -109,7 +110,7 @@ allRays dx dy g =
   , sy <- [0 .. height g  - 1]
   ]
 
-allRaysWithCoords :: Int -> Int -> Grid2D a -> [[((Int, Int), a)]]
+allRaysWithCoords :: Int -> Int -> Grid2D a -> [[(V2 Int, a)]]
 allRaysWithCoords dx dy g =
   [ rayWithCoords sx sy dx dy g
   | sx <- [0 .. width g - 1]
