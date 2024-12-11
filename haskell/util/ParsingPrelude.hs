@@ -52,6 +52,8 @@ char2digitBase (min 36 -> b) = fmap fromIntegral . guarding (< b) <=< \c -> guar
 onecharify :: (MonadParsec e s m, Token s ~ Char) => m a -> m a
 onecharify p = lookAhead p <* takeP Nothing 1
 
+-- | @scanManySkipping needle skip@ parses many instances of @needle@, skipping
+-- matches of @skip@ in between. @skip@ should not match the empty string.
 scanManySkipping :: MonadParsec e s m => m a -> m void -> m [a]
 scanManySkipping needle skip = go
   where
