@@ -242,3 +242,6 @@ guarding p x = x <$ guard (p x)
 splits :: [a] -> [([a], [a])]
 splits [] = [([],[])]
 splits l@(x:xs) = ([], l) : map (\case ~(as, bs) -> (x:as, bs)) (splits xs)
+
+traceShowF :: (Show a, Show b) => (a -> b) -> a -> b
+traceShowF f x = let y = f x in traceShow (x, y) y
