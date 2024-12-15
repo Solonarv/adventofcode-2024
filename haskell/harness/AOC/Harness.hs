@@ -3,6 +3,7 @@ module AOC.Harness where
 
 import Control.Exception
 import Control.Monad
+import Data.Bifunctor (first)
 import Data.Char (isSpace)
 import Data.Foldable
 import qualified Data.List as List
@@ -34,6 +35,7 @@ import qualified Text.Toml as Toml
 
 import AOC.Solution
 import DynMap
+import ParsingPrelude qualified
 
 type Day = Finite 25
 
@@ -165,7 +167,7 @@ solutionsFromList = Vector.fromList
 solutionForDay :: Solutions -> Day -> Maybe ASolution
 solutionForDay solutions day = solutions Vector.!? (fromIntegral day - 1)
 
-die' :: String -> IO ()
+die' :: String -> IO void
 die' s = do
   Ansi.hSetSGR stderr [Ansi.SetColor Ansi.Foreground Ansi.Vivid Ansi.Red ]
   die s
@@ -248,11 +250,11 @@ runSolveOn day opts cfg upload sln parts = do
   printf "Running solution for day %v...\n" day
   let infile = printf "%s/day%.2d.txt" (oInputDataDir opts) day
   input <- readFile infile
-  case parse (decodeInput sln <* eof) infile . List.dropWhile isSpace . List.dropWhileEnd isSpace $ input of
+  case parseNicely infile (decodeInput sln) $ input of
     Left err -> do
       fgColor Ansi.Dull Ansi.Red
       printf "  Couldn't decode input! \n"
-      printf (errorBundlePretty err)
+      printf err
     Right dat -> for_ parts $ \part -> do
       let ?dyns = emptyDynMap in case runSolver sln part dat of
         Nothing  -> do
@@ -267,6 +269,9 @@ runSolveOn day opts cfg upload sln parts = do
                 fgColor Ansi.Dull Ansi.Red
                 printf "Can't upload solution: missing session token!\n"
               Just _tok -> printf "Solution upload: not implemented\n"
+
+parseNicely :: String -> ParsingPrelude.Parser a -> String -> Either String a
+parseNicely loc p input = first errorBundlePretty . parse (p <* eof) loc . List.dropWhile isSpace . List.dropWhileEnd isSpace $ input
 
 maybeToRight :: e -> Maybe a -> Either e a
 maybeToRight e = maybe (Left e) Right

@@ -75,6 +75,13 @@ library util
 library solutions
   import: deps, lang
   exposed-modules: Day01, Day02, Day03, Day04, Day05, Day06, Day07, Day08
-                 , Day09, Day10, Day11, Day12, Day13
+                 , Day09, Day10, Day11, Day12, Day13, Day14
   hs-source-dirs: solutions
   build-depends: aoc2024, util
+
+executable day14
+  import: deps, lang
+  ghc-options:         -threaded -rtsopts -funbox-small-strict-fields
+  build-depends: solutions
+  hs-source-dirs: src
+  main-is: day14interactive.hs
