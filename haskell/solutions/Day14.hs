@@ -12,6 +12,7 @@ import Linear
 import GHC.Generics (Generic)
 import Data.Generics.Labels ()
 import Control.Lens
+import Data.Ord
 
 import Control.Concurrent
 import System.Environment (getArgs)
@@ -20,7 +21,7 @@ solution :: Solution [Bot] Int ()
 solution = Solution
   { decodeInput = botP `sepBy` eol
   , solveA = defSolver
-    { solve = Just . getSum . product . scoreQuadrants . map (moveBot 100)
+    { solve = Just . scoreQuadrants . map (moveBot 100)
     }
   , solveB = Solver
     { solve = const $ Just ()
@@ -71,8 +72,8 @@ botP = do
 moveBot :: HasDyns => Int -> Bot -> V2 Int
 moveBot d Bot{..} = wrap $ pos + d *^ vel
 
-scoreQuadrants :: HasDyns => [V2 Int] -> V4 (Sum Int)
-scoreQuadrants = foldMap toQuadrant
+scoreQuadrants :: HasDyns => [V2 Int] -> Int
+scoreQuadrants = getSum . product . foldMap toQuadrant
   where
     V2 w h = dimensions
     x0 = w `div` 2
@@ -99,7 +100,7 @@ isLikelyXmasTree bots =
   || score > 10 * maximalScore `div` 10
   where
   maximalScore = (500 `div` 4)^4
-  score = getSum . product $ scoreQuadrants bots
+  score = scoreQuadrants bots
 
 toMap :: HasDyns => [V2 Int] -> Grid2D Int
 toMap = foldl' addBot $ genGrid w h (\_ _ -> 0)
@@ -121,24 +122,19 @@ readInput = do
   contents <- readFile filename
   either die' pure $ parseNicely filename (decodeInput solution) contents
 
-run :: [Int] -> [Bot] -> IO ()
-run times bots = let ?dyns = emptyDynMap in for_ times \t -> do
-  let poss = map (moveBot t) bots
-  putStrLn $ showMap (toMap poss)
-  putStrLn $ "\n TIME: " <> show t <> "\n"
-  if False -- isLikelyXmasTree poss
-    then () <$ getLine -- wait for enter keypress
-    else pure () -- threadDelay 5 -- we're performance bound anyway (on my PC)
+run :: Int -> [Bot] -> IO ()
+run threshold bots = let ?dyns = emptyDynMap in let
+  poss = sortBy (comparing (view _3)) [(t, grid, scoreQuadrants grid) | t <- [0 .. 10102], let grid = map (moveBot t) bots]
+  candidates = take threshold poss
+  in for_ candidates \(t, grid, _) -> do
+    putStrLn $ showMap $ toMap grid
+    putStrLn $ "\n TIME: " <> show t
 
 -- some clustering on period 68
 -- not helpful though
+-- maybe try really low scoring grids?
 
 simpleMain :: IO ()
 simpleMain = do
-  times <- getArgs <&> map read <&> \case
-    [start, 0, step] -> [start, start+step .. 10103-1]
-    [start, end, step] -> [start, start+step .. end]
-    [start, 0] -> [start .. 10103-1]
-    [start, end] -> [start .. end]
-    [one] -> [one]
-  readInput >>= run times
+  [threshold] <- map read <$> getArgs
+  readInput >>= run threshold
