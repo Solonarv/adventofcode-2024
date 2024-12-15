@@ -34,6 +34,7 @@ import Text.Megaparsec (parse, errorBundlePretty, eof)
 import qualified Text.Toml as Toml
 
 import AOC.Solution
+import AOC.InteractiveHelpers
 import DynMap
 import ParsingPrelude qualified
 
@@ -167,11 +168,6 @@ solutionsFromList = Vector.fromList
 solutionForDay :: Solutions -> Day -> Maybe ASolution
 solutionForDay solutions day = solutions Vector.!? (fromIntegral day - 1)
 
-die' :: String -> IO void
-die' s = do
-  Ansi.hSetSGR stderr [Ansi.SetColor Ansi.Foreground Ansi.Vivid Ansi.Red ]
-  die s
-
 fetchInput :: Int -> Opts -> Day -> IO ()
 fetchInput year opts day = do
     printf "Fetching input for day %v.\n" day
@@ -269,9 +265,6 @@ runSolveOn day opts cfg upload sln parts = do
                 fgColor Ansi.Dull Ansi.Red
                 printf "Can't upload solution: missing session token!\n"
               Just _tok -> printf "Solution upload: not implemented\n"
-
-parseNicely :: String -> ParsingPrelude.Parser a -> String -> Either String a
-parseNicely loc p input = first errorBundlePretty . parse (p <* eof) loc . List.dropWhile isSpace . List.dropWhileEnd isSpace $ input
 
 maybeToRight :: e -> Maybe a -> Either e a
 maybeToRight e = maybe (Left e) Right

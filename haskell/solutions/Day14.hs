@@ -2,7 +2,7 @@
 module Day14 where
 
 import AOC.Solution
-import AOC.Harness  -- :(
+import AOC.InteractiveHelpers  -- :(
 import ParsingPrelude
 import Util
 import DynMap
